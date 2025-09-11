@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "react-app",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    "indent": "off",
+    "@typescript-eslint/indent": ["error", 4]
+  }
+}
