@@ -1,36 +1,31 @@
-import { createContext, ReactNode, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface AuthContextType {
-    user: { phone?: string; email?: string } | null;
-    login: (phone: string, password: string) => Promise<{ success: boolean }>;
-    sendOtp: (phone: string) => Promise<{ success: boolean }>;
-}
+type AuthContextType = {
+    login: (phone: string, password: string) => Promise<void>;
+};
 
-export const AuthContext = createContext<AuthContextType>({
-    user: null,
-    login: async () => ({ success: false }),
-    sendOtp: async () => ({ success: false }),
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<{ phone?: string; email?: string } | null>(null);
+    const [user, setUser] = useState<any>(null);
 
     const login = async (phone: string, password: string) => {
-        console.log('Login API:', phone, password);
-        await new Promise(r => setTimeout(r, 1000));
-        setUser({ phone });
-        return { success: true };
-    };
-
-    const sendOtp = async (phone: string) => {
-        console.log('Sending OTP to', phone);
-        await new Promise(r => setTimeout(r, 1000));
-        return { success: true };
+    // TODO: call backend API with axios
+        console.log('Logging in with', phone, password);
+        setUser({ phone }); // mock user
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, sendOtp }}>
+        <AuthContext.Provider value={{ login }}>
             {children}
         </AuthContext.Provider>
     );
+};
+
+export const useAuth = () => {
+    const ctx = useContext(AuthContext);
+    if (!ctx) {
+        throw new Error('useAuth must be used inside an AuthProvider');
+    }
+    return ctx;
 };

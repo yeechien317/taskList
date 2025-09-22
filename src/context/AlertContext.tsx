@@ -1,46 +1,32 @@
-import { createContext, ReactNode, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface AlertContextType {
+export type AlertContextType = {
     show: (msg: string) => void;
-    error: (msg: string) => void;
-}
+    error: string | null;
+};
 
-export const AlertContext = createContext<AlertContextType>({
-    show: () => void 0,
-    error: () => void 0,
-});
+const AlertContext = createContext<AlertContextType | undefined>(undefined);
 
 export const AlertProvider = ({ children }: { children: ReactNode }) => {
-    const [message, setMessage] = useState('');
-    const [type, setType] = useState<'success' | 'error'>('success');
+    const [error, setError] = useState<string | null>(null);
 
     const show = (msg: string) => {
-        setType('success');
-        setMessage(msg);
-        setTimeout(() => setMessage(''), 3000);
-    };
-
-    const error = (msg: string) => {
-        setType('error');
-        setMessage(msg);
-        setTimeout(() => setMessage(''), 3000);
+        setError(msg);
+        setTimeout(() => setError(null), 3000); // auto-hide
     };
 
     return (
         <AlertContext.Provider value={{ show, error }}>
             {children}
-            {message && (
-                <div style={{
-                    position: 'fixed',
-                    top: 20,
-                    right: 20,
-                    padding: 10,
-                    backgroundColor: type === 'error' ? 'red' : 'green',
-                    color: 'white',
-                }}>
-                    {message}
-                </div>
-            )}
         </AlertContext.Provider>
     );
+};
+
+// ✅ safe custom hook
+export const useAlert = () => {
+    const context = useContext(AlertContext);
+    if (!context) {
+        throw new Error('useAlert must be used inside an AlertProvider');
+    }
+    return context;
 };

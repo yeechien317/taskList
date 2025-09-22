@@ -1,80 +1,55 @@
-// src/pages/Login.tsx
-import { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Typography } from '@mui/material';
-import { AuthContext } from './context/AuthContext';
-import { AlertContext } from './context/AlertContext';
-import { PhoneInput } from './components/PhoneInput';
-import { SubmitButton } from './components/SubmitButton';
-
-type InputsType = {
-    phone: string;
-    password: string;
-};
+import React, { useState } from 'react';
+import axios from 'axios';
 
 export default function Login() {
-    const { login } = useContext(AuthContext);
-    const { show, error } = useContext(AlertContext);
-    const navigate = useNavigate();
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const [inputs, setInputs] = useState<InputsType>({
-        phone: '',
-        password: '',
-    });
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleSubmit = async () => {
         try {
-            setIsLoading(true);
-            const result = await login(inputs.phone, inputs.password); // call login
-            if (result.success) {
-                show('Logged in successfully!');
-                navigate('/'); // redirect to homepage
-            }
-        } catch (err) {
-            error('Login failed. Please check your credentials.');
-        } finally {
-            setIsLoading(false);
+            const res = await axios.post('http://localhost:5000/auth/login', {
+                username,
+                password,
+            });
+
+            console.log('✅ Login success:', res.data);
+            alert('Login successful!');
+        } catch (err: any) {
+            console.error('❌ Login failed:', err.response?.data || err.message);
+            setError(err.response?.data?.message || 'Login failed');
         }
     };
-
-    const canSubmit = inputs.phone.length > 0 && inputs.password.length > 0;
+    console.log('receiving', username, password);
 
     return (
-        <div style={{ width: '300px', margin: '100px auto' }}>
-            <Typography variant="h5" mb={2}>
-                Login
-            </Typography>
+        <form onSubmit={handleSubmit}>
+            <h2>Login</h2>
 
-            <PhoneInput
-                value={inputs.phone}
-                onChange={(phone: string) => setInputs({ ...inputs, phone })}
-            />
-
-            <input
-                type="password"
-                placeholder="Password"
-                value={inputs.password}
-                onChange={(e) =>
-                    setInputs({ ...inputs, password: e.target.value })
-                }
-                style={{
-                    marginTop: '1rem',
-                    width: '100%',
-                    padding: '0.5rem',
-                    fontSize: '1rem',
-                }}
-            />
-
-            <div style={{ marginTop: '1rem' }}>
-                <SubmitButton
-                    onClick={handleSubmit}
-                    loading={isLoading}
-                    disabled={!canSubmit}
-                    label="Login"
+            <div>
+                <label>Username</label>
+                <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                 />
             </div>
-        </div>
+
+            <div>
+                <label>Password</label>
+                <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+            </div>
+
+            <button type="submit">Login</button>
+
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+        </form>
     );
 }
